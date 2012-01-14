@@ -1,3 +1,11 @@
+var debug = false;
+
+function myalert(str) {
+	if (debug == true){
+		alert(str);
+	}
+}
+
 onload = function() {
 	var canvas = document.getElementById('canvassample');
 	/* 2Dコンテキスト */
@@ -101,7 +109,7 @@ onload = function() {
 		draw_users(users, ctx);
 	}
 
-	function add_users(user)
+	wunction add_users(user)
 	{
 		//jsonデータを拾ってくる
 		
@@ -152,7 +160,7 @@ onload = function() {
 				});
 
 				Img.on("mousedown", function(){
-					alert("ok");
+					myalert("ok");
 					click_event_user(this);
 				});
 
@@ -168,10 +176,10 @@ onload = function() {
 		click_x = event.pageX * rate; //　X座標を返す
 		click_y = event.pageY * rate; //　Y座標を返す
 
-		alert(click_x + "," + click_y);
-		alert(users[0]["x"] + "," + users[0]["y"]);
+		myalert(click_x + "," + click_y);
+		myalert(users[0]["x"] + "," + users[0]["y"]);
 		index = check_click_user(users, click_x, click_y);  //この関数がクリックしたインデックを返す
-		alert(index);
+		myalert(index);
 		if (index != -1){
 			click_user = users[index];
 			click_event_user(click_user);

@@ -16,7 +16,7 @@ else:
         form = cgi.FieldStorage();
         user = form["username"].value;
     except:
-        user = "seyoshiyo";
+        user = "HRN";
 
     json_str = urllib.urlopen("http://search.twitter.com/search.json?rpp=30&q=from:%s" % (user,)).read();
     dic = json.loads(json_str);
@@ -24,7 +24,8 @@ else:
     
     for result in results:
         text = result["text"];
-
+        
+        #print text;
         if (text.find(u"w/") != -1):
             continue;
         index = text.find("@");
@@ -32,7 +33,7 @@ else:
             link_user = "";
             user_name_len = 0;
             index += 1;
-            while (text[index + user_name_len] != u' ' and text[index + user_name_len] != u':'):
+            while ((len(text) > index + user_name_len) and text[index + user_name_len].isalpha()):
                 link_user += text[index + user_name_len];
                 user_name_len += 1;
             if ((not (link_user in link_users)) and link_user != "" and link_user != user):
