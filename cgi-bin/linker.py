@@ -16,8 +16,8 @@ else:
         form = cgi.FieldStorage();
         user = form["username"].value;
     except:
-        user = "HRN";
-
+        user = "natrium11321";
+    
     json_str = urllib.urlopen("http://search.twitter.com/search.json?rpp=30&q=from:%s" % (user,)).read();
     dic = json.loads(json_str);
     results = dic["results"];
@@ -33,14 +33,17 @@ else:
             link_user = "";
             user_name_len = 0;
             index += 1;
-            while ((len(text) > index + user_name_len) and text[index + user_name_len].isalpha()):
-                link_user += text[index + user_name_len];
+            while ((len(text) > index + user_name_len) and (text[index + user_name_len].isalnum() or text[index + user_name_len] == '_')):
+                try:
+                    link_user += text[index + user_name_len].decode("ascii");
+                except:
+                    break;
                 user_name_len += 1;
             if ((not (link_user in link_users)) and link_user != "" and link_user != user):
                 link_users.append(link_user);
             index = text.find("@", index + 1);
     
-    res = {"users": link_users};
+    res = {"users": link_users[:5]};
 
     print "Content-Type: text/html; charset=utf-8"
     print "";

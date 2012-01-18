@@ -9,26 +9,31 @@ function myalert(str) {
 
 window.onload = function () {
 	var icon_size = 40;
-	var width = window.innerWidth;
-	var height = window.innerHeight;
+	var width = window.innerWidth * 2;
+	var height = window.innerHeight * 2;
 	var stage = new Kinetic.Stage("canvassample", width, height);
+	var lines = new Kinetic.Shape(function () {
+	}, 'background');
 	var image = new Image();
 	var icon_base = "https://api.twitter.com/1/users/profile_image?size=normal&screen_name=";
 	var users = [];
 	var r = 200;
+	var color_list = ["red", "blue", "green"];
 	var comment_area = new Kinetic.Shape(function(){
 			var context = this.getContext();
 			context.beginPath();
 			context.fillStyle = "black";
-			context.fillRect(5, 5, 100, 30);
-			context.font = "12pt Calibri";
+			context.fillRect(5, 5, 200, 400);
+			context.font = "14pt Calibri";
 			context.fillStyle = "white";
 			context.textBaseline = "top";
 			context.fillText(comment_area.text, 10, 10);
+			context.fillText(comment_area.text, 10, 25);
 		});
 		comment_area.text = "";
 		comment_area.hide();
 		stage.add(comment_area);
+		stage.add(lines);
 	/*
 	image.onload = function() {
 		var kimage = new Kinetic.Image({
@@ -69,6 +74,7 @@ window.onload = function () {
 			"child_count": -1,
 			"childs": [],
 			child_id: child_id,
+			line_color: 0,
 		};
 		
 		user.icon.onerror = function() {
@@ -90,22 +96,45 @@ window.onload = function () {
 			height: icon_size,
 		});
 		
-		kimage.on("mousedown", function() {
+		kimage.on("click", function() {
 			pos = stage.getMousePos();
 			click_event_user(users[check_click_user(users, pos.x, pos.y)]);
+		});
+		kimage.on("dblclick", function() {
+			pos = stage.getMousePos();
+			index = check_click_user(users, pos.x, pos.y);
+			location.href = "https://twitter.com/#!/" + users[index].name;
 		});
 		kimage.on("mouseover", function() {
 			pos = stage.getMousePos();
 			index = check_click_user(users, pos.x, pos.y);
 			comment(users[index], pos.x, pos.y);
-			
+			stage.drawShapes();
 		});
 		kimage.on("mouseout", function() {
 			comment_area.hide();
 		});
 		stage.add(kimage);
 		user.kimage = kimage;
-
+		var p;
+		if (parent_ != "root"){
+			var i;
+			for (i = 0; i < users.length; i++){
+				if (users[i].name == parent_){
+					break;
+				}
+			}
+			p = users[i];
+			var context = lines.getContext();
+			var ux = user.x + icon_size / 2;
+			var uy = user.y + icon_size / 2;
+			var px = p.x + icon_size / 2;
+			var py = p.y + icon_size / 2;
+			context.moveTo(ux,uy);
+			context.lineTo(px,py);
+			context.stroke();
+			user.line_color = (p.line_color + 1) % color_list.length
+		}
 		return (user);
 	}
 
@@ -113,7 +142,7 @@ window.onload = function () {
 	{
 		comment_area.x = x;
 		comment_area.y = y;
-		comment_area.text = user.name;
+		comment_area.text = "name:" + user.name;
 		comment_area.show();
 		comment_area.moveToTop();
 		stage.drawShapes();
@@ -176,6 +205,18 @@ window.onload = function () {
 	}
 	setInterval(function () {
 		stage.drawShapes();
+		var context = lines.getContext();
+		for (var i = 0; i < users.length; i++){
+			for (var j = 0; j < users[i].childs.length; j++){
+				child = users[i].childs[j];
+				context.beginPath();
+				context.strokeStyle = color_list[users[i].line_color];
+				context.moveTo(users[i].x + icon_size / 2, users[i].y + icon_size / 2);
+				context.lineTo(child.x + icon_size / 2, child.y + icon_size / 2);
+				context.stroke();
+			}
+		}
+		context.stroke();
 	}, 100);
 
 	
