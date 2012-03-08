@@ -1,0 +1,16 @@
+exec = (require 'child_process').exec
+#分割代入を使って{exec}=require 'child_process'なんて書けばスマートだね。
+
+
+#コンパイルするファイル群
+fils=[
+	'physical_object.coffee'
+	'test_object.coffee'
+]
+
+#第二引数の関数は実行が終わった後に呼び出されます。
+exec "coffee -cj #{files.join ' '}",(err,stdout,stderr)->
+	#エラーや出力結果を出して終わる。
+	throw err if err
+	console.log stdout+stderr
+

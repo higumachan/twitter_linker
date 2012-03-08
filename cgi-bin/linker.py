@@ -24,9 +24,9 @@ else:
     
     for result in results:
         text = result["text"];
-        
+
         #print text;
-        if (text.find(u"w/") != -1):
+        if (text.find(u"w/") != -1):    # フォースクエアを弾くためのコード
             continue;
         index = text.find("@");
         while (index != -1):

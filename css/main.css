@@ -1,0 +1,76 @@
+*{
+	margin: auto;
+	padding: auto;
+	font-family: 'メイリオ',Meiryo,'AXIS Std L','ヒラギノ角ゴ Pro W3','Hiragino Kaku Gothic Pro','ＭＳ Ｐゴシック',sans-serif;
+}
+
+body {
+	background: #000000;
+}
+
+#header{
+	/*background: #ff0000;*/
+	background: #000000;
+	display: block;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 5px;
+	margin-bottom: 20px;
+	width: 820px;
+	
+}
+
+#main_area{
+	/*background: #ff00ff;*/
+	background: #000000;
+	width: 820px;
+	margin-bottom: 20px;
+}
+
+/*
+#left_area{
+	float: left;
+	/*background: #00ff00;
+	width: 19%;
+	margin-left: auto;
+}
+*/
+
+
+/*-----------------
+中央エリア
+------------------*/
+#center_area{
+	float: left;
+	/*background: #0000ff;*/
+	background: #000000;
+	width: 820px;
+	height: 500px;
+}
+
+
+/*
+#right_area{
+	float: left;
+	/*background: #ffff00;
+	width: 19%;
+	margin-right: auto;
+}
+*/
+
+#how_to{
+	/*background: #F0F0F0; */　
+	/*clear: both;*/
+	/*position: absolute; */
+	background: #000000;
+	width: 820px;
+	clear: both;
+	float: left;
+	margin-top:20px;
+	margin-left: 10%;
+}
+
+#how_to_img{
+	zoom: 50%;
+}

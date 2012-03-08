@@ -175,6 +175,7 @@ window.onload = function () {
 		});
 		kimage.on("mouseover", function() {
 			pos = stage.getMousePos();
+			alert(this.x);
 			index = check_click_user(users, pos.x, pos.y);
 			//comment(users[index], pos.x, pos.y);
 		});
