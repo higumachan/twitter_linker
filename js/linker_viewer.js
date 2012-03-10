@@ -88,7 +88,7 @@
     function PhysicalObject(pos, dest) {
       this.pos = pos;
       this.dest = dest;
-      this.speed = 0.1;
+      this.speed = 0.01;
       this.velocity = new Vector(0, 0);
     }
 
@@ -103,8 +103,13 @@
     };
 
     PhysicalObject.prototype.acceralated = function() {
-      this.velocity.x = (this.dest.x - this.pos.x) * this.speed;
-      return this.velocity.y = (this.dest.y - this.pos.y) * this.speed;
+      var floor_friction;
+      this.velocity.x += (this.dest.x - this.pos.x) * this.speed;
+      this.velocity.y += (this.dest.y - this.pos.y) * this.speed;
+      floor_friction = new Vector(this.velocity.x, this.velocity.y);
+      floor_friction.rev();
+      floor_friction.mul(0.07);
+      return this.velocity.add(floor_friction);
     };
 
     PhysicalObject.prototype.draw = function() {

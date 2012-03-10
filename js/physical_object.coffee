@@ -43,7 +43,7 @@ class PhysicalObject
 	constructor: (pos, dest) -> 
 		@pos = pos;
 		@dest = dest;
-		@speed = 0.1;
+		@speed = 0.01;
 		@velocity = new Vector(0, 0);
 
 	set_dist_pos: (pos) ->
@@ -55,8 +55,12 @@ class PhysicalObject
 		@pos.y += @velocity.y;
 	
 	acceralated: () ->
-		@velocity.x = (@dest.x - @pos.x) * @speed;
-		@velocity.y = (@dest.y - @pos.y) * @speed;
+		@velocity.x += (@dest.x - @pos.x) * @speed;
+		@velocity.y += (@dest.y - @pos.y) * @speed;
+		floor_friction = new Vector(@velocity.x, @velocity.y);
+		floor_friction.rev();
+		floor_friction.mul(0.07);
+		@velocity.add(floor_friction);
 	
 	draw: () ->
 		alert("override please");
