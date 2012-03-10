@@ -115,7 +115,7 @@
       var dist;
       dist = new Vector(this.pos.x, this.pos.y);
       dist.sub(this.dest);
-      return dist.size() > 10;
+      return dist.size() > 15;
     };
 
     PhysicalObject.prototype.print = function() {
@@ -238,7 +238,6 @@
           object = _ref[_i];
           v = new Vector(pos.x, pos.y);
           v.sub(stage_drag_state.ago_pos);
-          v.rev();
           object.dest.add(v);
         }
         return stage_drag_state.update(new Vector(pos.x, pos.y));
@@ -259,6 +258,7 @@
 
     function UserObject(pos, dest, name, parent) {
       UserObject.__super__.constructor.call(this, pos, dest);
+      this.start_pos = new Vector(pos.x, pos.y);
       this.name = name;
       this.parent = parent;
       this.childs = [];
@@ -281,35 +281,38 @@
     };
 
     UserObject.prototype.click = function() {
-      var self, x, y;
+      var self, v, x, y;
+      v = drag_state.get_drag_vector();
       x = this.pos.x;
       y = this.pos.y;
-      self = this;
-      return $.getJSON("/cgi-bin/linker.py", {
-        "username": this.name
-      }, function(json) {
-        var add, count, i, nx, ny, r, random_radian, s, user, users, v, _len, _results;
-        users = json.users;
-        random_radian = Math.random() * 2 * Math.PI;
-        count = json.users.length;
-        r = 100;
-        _results = [];
-        for (i = 0, _len = users.length; i < _len; i++) {
-          user = users[i];
-          if (userobjects.is_duplicate(user) === false) {
-            nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
-            ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
-            v = new Vector(nx, ny);
-            s = new Vector(self.pos.x, self.pos.y);
-            add = new UserObject(s, v, user, self);
-            self.childs.push(add);
-            _results.push(userobjects.append(add));
-          } else {
-            _results.push(void 0);
+      if (v.size() < 3) {
+        self = this;
+        return $.getJSON("/cgi-bin/linker.py", {
+          "username": this.name
+        }, function(json) {
+          var add, count, i, nx, ny, r, random_radian, s, user, users, _len, _results;
+          users = json.users;
+          random_radian = Math.random() * 2 * Math.PI;
+          count = json.users.length;
+          r = 100;
+          _results = [];
+          for (i = 0, _len = users.length; i < _len; i++) {
+            user = users[i];
+            if (userobjects.is_duplicate(user) === false) {
+              nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
+              ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
+              v = new Vector(nx, ny);
+              s = new Vector(self.pos.x, self.pos.y);
+              add = new UserObject(s, v, user, self);
+              self.childs.push(add);
+              _results.push(userobjects.append(add));
+            } else {
+              _results.push(void 0);
+            }
           }
-        }
-        return _results;
-      });
+          return _results;
+        });
+      }
     };
 
     UserObject.prototype.dbclick = function() {
@@ -332,6 +335,10 @@
     };
 
     UserObject.prototype.dragend = function() {
+      this.pos.x = this.start_pos.x + this.icon.x;
+      this.pos.y = this.start_pos.y + this.icon.y;
+      this.dest.x = this.start_pos.x + this.icon.x;
+      this.dest.y = this.start_pos.y + this.icon.y;
       drag_state.unset();
       return console.log(this.icon.x, this.icon.y);
     };
@@ -442,6 +449,13 @@
 
     DragState.prototype.unset = function() {
       return this.flag = false;
+    };
+
+    DragState.prototype.get_drag_vector = function() {
+      var result;
+      result = new Vector(this.start_pos.x, this.start_pos.y);
+      result.sub(this.ago_pos);
+      return result;
     };
 
     return DragState;

@@ -60,7 +60,7 @@ class UserObjects extends PhysicalObjects
 			for object in @objects
 				v = new Vector(pos.x, pos.y);
 				v.sub(stage_drag_state.ago_pos);
-				v.rev();
+				#v.rev();
 				object.dest.add(v);
 			stage_drag_state.update(new Vector( pos.x, pos.y));
 	mouse_up: () ->
@@ -70,6 +70,7 @@ class UserObjects extends PhysicalObjects
 class UserObject extends PhysicalObject
 	constructor: (pos, dest, name, parent) ->
 		super(pos, dest);
+		@start_pos = new Vector(pos.x, pos.y);
 		@name = name;
 		@parent = parent;
 		@childs = [];
@@ -88,24 +89,26 @@ class UserObject extends PhysicalObject
 		alert("test");
 
 	click: () ->
+		v = drag_state.get_drag_vector();
 		x = @pos.x;
 		y = @pos.y;
-		self = this;
-		$.getJSON("/cgi-bin/linker.py", {"username": @name}, (json) ->
-			users = json.users;
-			random_radian = Math.random() * 2 * Math.PI;
-			count = json.users.length;
-			r = 100;
-			for user,i in users
-				if (userobjects.is_duplicate(user) == false)
-					nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
-					ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
-					v = new Vector(nx, ny);
-					s = new Vector(self.pos.x, self.pos.y);
-					add = new UserObject(s, v, user, self);
-					self.childs.push(add);
-					userobjects.append(add);
-		)
+		if (v.size() < 3)
+			self = this;
+			$.getJSON("/cgi-bin/linker.py", {"username": @name}, (json) ->
+				users = json.users;
+				random_radian = Math.random() * 2 * Math.PI;
+				count = json.users.length;
+				r = 100;
+				for user,i in users
+					if (userobjects.is_duplicate(user) == false)
+						nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
+						ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
+						v = new Vector(nx, ny);
+						s = new Vector(self.pos.x, self.pos.y);
+						add = new UserObject(s, v, user, self);
+						self.childs.push(add);
+						userobjects.append(add);
+			)
 	dbclick: () ->
 		window.open("https://twitter.com/#!/" + @name);
 		
@@ -119,6 +122,12 @@ class UserObject extends PhysicalObject
 			drag_state.set(userobjects.stage.getMousePos());
 			@icon.moveToTop();
 	dragend: () ->
+		@pos.x = (@start_pos.x + @icon.x);
+		@pos.y = (@start_pos.y + @icon.y);
+		@dest.x = (@start_pos.x + @icon.x);
+		@dest.y = (@start_pos.y + @icon.y);
+		#@icon.x = (@pos.x - @start_pos.x);
+		#@icon.y = (@pos.y - @start_pos.y);
 		drag_state.unset();
 		console.log(@icon.x, @icon.y);
 	mousemove: () ->
@@ -183,6 +192,10 @@ class DragState
 		@ago_pos = pos;
 	unset: () ->
 		@flag = false;
+	get_drag_vector: () ->
+		result = new Vector(@start_pos.x, @start_pos.y);
+		result.sub(@ago_pos);
+		return (result);
 
 drag_state = new DragState();
 stage_drag_state = new DragState();

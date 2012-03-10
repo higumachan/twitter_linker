@@ -64,7 +64,7 @@ class PhysicalObject
 	is_moving: () ->
 		dist = new Vector(@pos.x, @pos.y);
 		dist.sub(@dest);
-		return (dist.size() > 10);
+		return (dist.size() > 15);
 	print: () ->
 		console.log("#{@pos.x}, #{@pos.y}");
 	
