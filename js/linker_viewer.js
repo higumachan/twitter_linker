@@ -1,5 +1,5 @@
 (function() {
-  var DragState, PhysicalObject, PhysicalObjects, UserObject, UserObjects, Vector, color_list, drag_state, icon_size, stage_drag_state, userobjects,
+  var DragState, PhysicalObject, PhysicalObjects, UserObject, UserObjects, Vector, color_count, color_list, drag_state, icon_size, stage_drag_state, userobjects,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -88,7 +88,7 @@
     function PhysicalObject(pos, dest) {
       this.pos = pos;
       this.dest = dest;
-      this.speed = 0.01;
+      this.speed = 0.06;
       this.velocity = new Vector(0, 0);
     }
 
@@ -108,7 +108,7 @@
       this.velocity.y += (this.dest.y - this.pos.y) * this.speed;
       floor_friction = new Vector(this.velocity.x, this.velocity.y);
       floor_friction.rev();
-      floor_friction.mul(0.07);
+      floor_friction.mul(0.09);
       return this.velocity.add(floor_friction);
     };
 
@@ -133,6 +133,8 @@
 
   color_list = ["red", "orange", "green", "blue", "purple"];
 
+  color_count = color_list.length;
+
   icon_size = 40;
 
   UserObjects = (function(_super) {
@@ -142,8 +144,8 @@
     function UserObjects() {
       var close_down, close_move, close_up, self;
       UserObjects.__super__.constructor.call(this);
-      this.width = 820;
-      this.height = 500;
+      this.width = 1024;
+      this.height = 780;
       this.stage = new Kinetic.Stage("center_area", this.width, this.height);
       self = this;
       close_down = function() {
@@ -161,6 +163,7 @@
       this.lines = new Kinetic.Shape(function() {
         return "test";
       }, "background");
+      this.lines.alpha = 0.8;
       this.stage.add(this.lines);
     }
 
@@ -194,7 +197,7 @@
           for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
             child = _ref2[_j];
             context.beginPath();
-            context.strokeStyle = "red";
+            context.strokeStyle = color_list[object.depth % color_count];
             context.moveTo(object.pos.x + icon_size / 2, object.pos.y + icon_size / 2);
             context.lineTo(child.pos.x + icon_size / 2, child.pos.y + icon_size / 2);
             _results2.push(context.stroke());
@@ -229,14 +232,14 @@
 
     UserObjects.prototype.mouse_down = function() {
       var pos;
-      pos = this.stage.getMousePos();
+      pos = this.stage.getMousePosition();
       if (this.is_on_mouse_object(pos) === true) return 0.;
       if (stage_drag_state.flag === false) return stage_drag_state.set(pos);
     };
 
     UserObjects.prototype.mouse_move = function() {
       var object, pos, v, _i, _len, _ref;
-      pos = this.stage.getMousePos();
+      pos = this.stage.getMousePosition();
       if (stage_drag_state.flag === true) {
         _ref = this.objects;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -261,12 +264,13 @@
 
     __extends(UserObject, _super);
 
-    function UserObject(pos, dest, name, parent) {
+    function UserObject(pos, dest, name, parent, depth) {
       UserObject.__super__.constructor.call(this, pos, dest);
       this.start_pos = new Vector(pos.x, pos.y);
       this.name = name;
       this.parent = parent;
       this.childs = [];
+      this.depth = depth;
       this.init();
     }
 
@@ -288,8 +292,11 @@
     UserObject.prototype.click = function() {
       var self, v, x, y;
       v = drag_state.get_drag_vector();
-      x = this.pos.x;
-      y = this.pos.y;
+      x = this.dest.x;
+      y = this.dest.y;
+      this.icon.setWidth(50);
+      this.icon.setHeight(50);
+      console.log(this.icon.width);
       if (v.size() < 3) {
         self = this;
         return $.getJSON("/cgi-bin/linker.py", {
@@ -299,7 +306,7 @@
           users = json.users;
           random_radian = Math.random() * 2 * Math.PI;
           count = json.users.length;
-          r = 100;
+          r = 200;
           _results = [];
           for (i = 0, _len = users.length; i < _len; i++) {
             user = users[i];
@@ -308,7 +315,7 @@
               ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
               v = new Vector(nx, ny);
               s = new Vector(self.pos.x, self.pos.y);
-              add = new UserObject(s, v, user, self);
+              add = new UserObject(s, v, user, self, self.depth + 1);
               self.childs.push(add);
               _results.push(userobjects.append(add));
             } else {
@@ -334,7 +341,7 @@
 
     UserObject.prototype.dragstart = function() {
       if (drag_state.flag === false) {
-        drag_state.set(userobjects.stage.getMousePos());
+        drag_state.set(userobjects.stage.getMousePosition());
         return this.icon.moveToTop();
       }
     };
@@ -351,7 +358,7 @@
     UserObject.prototype.mousemove = function() {
       var pos, vec;
       if (drag_state.flag === true) {
-        pos = userobjects.stage.getMousePos();
+        pos = userobjects.stage.getMousePosition();
         vec = new Vector(pos.x, pos.y);
         vec.sub(drag_state.ago_pos);
         this.dragger_move(vec);
@@ -477,7 +484,7 @@
     var close_update, root_user, self_update, start_pos;
     userobjects = new UserObjects();
     start_pos = new Vector(userobjects.width / 2, userobjects.height / 2);
-    root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), "pinkroot", "root");
+    root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), "pinkroot", "root", 0);
     userobjects.append(root_user);
     self_update = userobjects;
     close_update = function() {

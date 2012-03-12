@@ -43,7 +43,7 @@ class PhysicalObject
 	constructor: (pos, dest) -> 
 		@pos = pos;
 		@dest = dest;
-		@speed = 0.01;
+		@speed = 0.06;
 		@velocity = new Vector(0, 0);
 
 	set_dist_pos: (pos) ->
@@ -59,7 +59,7 @@ class PhysicalObject
 		@velocity.y += (@dest.y - @pos.y) * @speed;
 		floor_friction = new Vector(@velocity.x, @velocity.y);
 		floor_friction.rev();
-		floor_friction.mul(0.07);
+		floor_friction.mul(0.09);
 		@velocity.add(floor_friction);
 	
 	draw: () ->

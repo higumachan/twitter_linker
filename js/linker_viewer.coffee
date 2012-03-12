@@ -1,12 +1,13 @@
 
 color_list =["red", "orange", "green", "blue", "purple"];
+color_count = color_list.length;
 icon_size = 40
 
 class UserObjects extends PhysicalObjects
 	constructor: () ->
 		super();
-		@width = 820;
-		@height = 500;
+		@width = 1024;
+		@height = 780;
 		@stage = new Kinetic.Stage("center_area", @width, @height);
 		self = this;
 		close_down = -> self.mouse_down();
@@ -34,7 +35,7 @@ class UserObjects extends PhysicalObjects
 		for object in @objects
 			for child in object.childs
 				context.beginPath();
-				context.strokeStyle = "red";
+				context.strokeStyle = color_list[object.depth % color_count];
 				context.moveTo(object.pos.x + icon_size / 2, object.pos.y + icon_size / 2);
 				context.lineTo(child.pos.x + icon_size / 2, child.pos.y + icon_size / 2);
 				context.stroke();
@@ -49,13 +50,13 @@ class UserObjects extends PhysicalObjects
 				return (true);
 		return (false);
 	mouse_down: () ->
-		pos = @stage.getMousePos();
+		pos = @stage.getMousePosition();
 		if (@is_on_mouse_object(pos) == true)
 			return (0);
 		if (stage_drag_state.flag == false)
 			stage_drag_state.set(pos);
 	mouse_move: () ->
-		pos = @stage.getMousePos();
+		pos = @stage.getMousePosition();
 		if (stage_drag_state.flag == true)
 			for object in @objects
 				v = new Vector(pos.x, pos.y);
@@ -68,12 +69,13 @@ class UserObjects extends PhysicalObjects
 
 
 class UserObject extends PhysicalObject
-	constructor: (pos, dest, name, parent) ->
+	constructor: (pos, dest, name, parent, depth) ->
 		super(pos, dest);
 		@start_pos = new Vector(pos.x, pos.y);
 		@name = name;
 		@parent = parent;
 		@childs = [];
+		@depth = depth;
 		@init();
 	update: () ->
 		super();
@@ -90,22 +92,25 @@ class UserObject extends PhysicalObject
 
 	click: () ->
 		v = drag_state.get_drag_vector();
-		x = @pos.x;
-		y = @pos.y;
+		x = @dest.x;
+		y = @dest.y;
+		@icon.setWidth(50);
+		@icon.setHeight(50);
+		console.log(@icon.width);
 		if (v.size() < 3)
 			self = this;
 			$.getJSON("/cgi-bin/linker.py", {"username": @name}, (json) ->
 				users = json.users;
 				random_radian = Math.random() * 2 * Math.PI;
 				count = json.users.length;
-				r = 100;
+				r = 200;
 				for user,i in users
 					if (userobjects.is_duplicate(user) == false)
 						nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
 						ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
 						v = new Vector(nx, ny);
 						s = new Vector(self.pos.x, self.pos.y);
-						add = new UserObject(s, v, user, self);
+						add = new UserObject(s, v, user, self, self.depth + 1);
 						self.childs.push(add);
 						userobjects.append(add);
 			)
@@ -119,7 +124,7 @@ class UserObject extends PhysicalObject
 		console.log(@name);
 	dragstart: () ->
 		if (drag_state.flag == false)
-			drag_state.set(userobjects.stage.getMousePos());
+			drag_state.set(userobjects.stage.getMousePosition());
 			@icon.moveToTop();
 	dragend: () ->
 		@pos.x = (@start_pos.x + @icon.x);
@@ -132,7 +137,7 @@ class UserObject extends PhysicalObject
 		console.log(@icon.x, @icon.y);
 	mousemove: () ->
 		if (drag_state.flag == true)
-			pos = userobjects.stage.getMousePos();
+			pos = userobjects.stage.getMousePosition();
 			vec = new Vector(pos.x, pos.y);
 			vec.sub(drag_state.ago_pos);
 			@dragger_move(vec);
@@ -203,7 +208,7 @@ userobjects = 0;
 window.onload = -> 
 	userobjects = new UserObjects();
 	start_pos = new Vector(userobjects.width / 2, userobjects.height / 2);
-	root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), "pinkroot", "root");
+	root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), "pinkroot", "root", 0);
 	userobjects.append(root_user);
 	
 	self_update = userobjects;
