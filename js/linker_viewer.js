@@ -146,7 +146,7 @@
       UserObjects.__super__.constructor.call(this);
       this.width = 1024;
       this.height = 780;
-      this.stage = new Kinetic.Stage("center_area", this.width, this.height);
+      this.stage = new Kinetic.Stage("linker_area", this.width, this.height);
       self = this;
       close_down = function() {
         return self.mouse_down();
@@ -160,16 +160,15 @@
       this.stage.on("mousedown", close_down);
       this.stage.on("mousemove", close_move);
       this.stage.on("mouseup", close_up);
-      this.lines = new Kinetic.Shape(function() {
-        return "test";
-      }, "background");
-      this.lines.alpha = 0.8;
-      this.stage.add(this.lines);
+      this.user_layer = new Kinetic.Layer();
+      this.line_layer = new Kinetic.Layer();
+      this.stage.add(this.line_layer);
+      this.stage.add(this.user_layer);
     }
 
     UserObjects.prototype.update = function() {
       UserObjects.__super__.update.call(this);
-      this.stage.drawShapes();
+      this.stage.draw();
       return this.draw_lines();
     };
 
@@ -183,23 +182,32 @@
     };
 
     UserObjects.prototype.draw_lines = function() {
-      var child, context, object, _i, _len, _ref, _results;
-      context = this.lines.getContext();
+      var child, context, link, object, _i, _j, _len, _len2, _ref, _ref2, _results;
+      context = this.line_layer.getContext();
       context.lineWidth = 4;
       _ref = this.objects;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         object = _ref[_i];
+        _ref2 = object.childs;
+        for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+          child = _ref2[_j];
+          context.beginPath();
+          context.strokeStyle = color_list[object.depth % color_count];
+          context.moveTo(object.pos.x + icon_size / 2, object.pos.y + icon_size / 2);
+          context.lineTo(child.pos.x + icon_size / 2, child.pos.y + icon_size / 2);
+          context.stroke();
+        }
         _results.push((function() {
-          var _j, _len2, _ref2, _results2;
-          _ref2 = object.childs;
+          var _k, _len3, _ref3, _results2;
+          _ref3 = object.links;
           _results2 = [];
-          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-            child = _ref2[_j];
+          for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
+            link = _ref3[_k];
             context.beginPath();
             context.strokeStyle = color_list[object.depth % color_count];
             context.moveTo(object.pos.x + icon_size / 2, object.pos.y + icon_size / 2);
-            context.lineTo(child.pos.x + icon_size / 2, child.pos.y + icon_size / 2);
+            context.lineTo(link.pos.x + icon_size / 2, link.pos.y + icon_size / 2);
             _results2.push(context.stroke());
           }
           return _results2;
@@ -214,6 +222,16 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         object = _ref[_i];
         if (object.name === name) return true;
+      }
+      return false;
+    };
+
+    UserObjects.prototype.get_duplicate = function(name) {
+      var object, _i, _len, _ref;
+      _ref = this.objects;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        object = _ref[_i];
+        if (object.name === name) return object;
       }
       return false;
     };
@@ -266,6 +284,7 @@
 
     function UserObject(pos, dest, name, parent, depth) {
       UserObject.__super__.constructor.call(this, pos, dest);
+      this.links = [];
       this.start_pos = new Vector(pos.x, pos.y);
       this.name = name;
       this.parent = parent;
@@ -277,12 +296,7 @@
     UserObject.prototype.update = function() {
       UserObject.__super__.update.call(this);
       this.icon.x += this.velocity.x;
-      this.icon.y += this.velocity.y;
-      if (this.is_moving()) {
-        return this.icon.draggable(false);
-      } else {
-        return this.icon.draggable(true);
-      }
+      return this.icon.y += this.velocity.y;
     };
 
     UserObject.prototype.draw = function() {
@@ -290,41 +304,45 @@
     };
 
     UserObject.prototype.click = function() {
-      var self, v, x, y;
-      v = drag_state.get_drag_vector();
+      var change_size, self, x, y;
       x = this.dest.x;
       y = this.dest.y;
-      this.icon.setWidth(50);
-      this.icon.setHeight(50);
-      console.log(this.icon.width);
-      if (v.size() < 3) {
-        self = this;
-        return $.getJSON("/cgi-bin/linker.py", {
-          "username": this.name
-        }, function(json) {
-          var add, count, i, nx, ny, r, random_radian, s, user, users, _len, _results;
-          users = json.users;
-          random_radian = Math.random() * 2 * Math.PI;
-          count = json.users.length;
-          r = 200;
-          _results = [];
-          for (i = 0, _len = users.length; i < _len; i++) {
-            user = users[i];
-            if (userobjects.is_duplicate(user) === false) {
-              nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
-              ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
-              v = new Vector(nx, ny);
-              s = new Vector(self.pos.x, self.pos.y);
-              add = new UserObject(s, v, user, self, self.depth + 1);
-              self.childs.push(add);
-              _results.push(userobjects.append(add));
-            } else {
-              _results.push(void 0);
-            }
+      self = this;
+      change_size = function() {
+        self.icon.setWidth(icon_size);
+        self.icon.setHeight(icon_size);
+        return userobjects.stage.draw();
+      };
+      return $.getJSON("/cgi-bin/linker.py", {
+        "username": this.name
+      }, function(json) {
+        var add, count, i, nx, ny, r, random_radian, s, user, users, v, _len, _results;
+        self.icon.setWidth(50);
+        self.icon.setHeight(50);
+        userobjects.stage.draw();
+        setTimeout(change_size, 300);
+        users = json.users;
+        random_radian = Math.random() * 2 * Math.PI;
+        count = json.users.length;
+        r = 200;
+        _results = [];
+        for (i = 0, _len = users.length; i < _len; i++) {
+          user = users[i];
+          if (userobjects.is_duplicate(user) === false) {
+            nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
+            ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
+            v = new Vector(nx, ny);
+            s = new Vector(self.dest.x, self.dest.y);
+            add = new UserObject(s, v, user, self, self.depth + 1);
+            console.log(add);
+            self.childs.push(add);
+            _results.push(userobjects.append(add));
+          } else {
+            _results.push(self.links.push(userobjects.get_duplicate(user)));
           }
-          return _results;
-        });
-      }
+        }
+        return _results;
+      });
     };
 
     UserObject.prototype.dbclick = function() {
@@ -347,17 +365,17 @@
     };
 
     UserObject.prototype.dragend = function() {
-      this.pos.x = this.start_pos.x + this.icon.x;
-      this.pos.y = this.start_pos.y + this.icon.y;
-      this.dest.x = this.start_pos.x + this.icon.x;
-      this.dest.y = this.start_pos.y + this.icon.y;
       drag_state.unset();
       return console.log(this.icon.x, this.icon.y);
     };
 
-    UserObject.prototype.mousemove = function() {
+    UserObject.prototype.dragmove = function() {
       var pos, vec;
       if (drag_state.flag === true) {
+        this.pos.x = this.icon.x;
+        this.pos.y = this.icon.y;
+        this.dest.x = this.icon.x;
+        this.dest.y = this.icon.y;
         pos = userobjects.stage.getMousePosition();
         vec = new Vector(pos.x, pos.y);
         vec.sub(drag_state.ago_pos);
@@ -392,19 +410,22 @@
     };
 
     UserObject.prototype.init = function() {
-      var close_click, close_dbclick, close_dragend, close_dragstart, close_mousemove, close_mouseout, close_mouseover, image, self,
-        _this = this;
+      var close_click, close_dbclick, close_dragend, close_dragmove, close_dragstart, close_mouseout, close_mouseover, image, self;
       image = new Image();
       image.onerror = function() {
-        return _this.src = "https://api.twitter.com/1/users/profile_image?size=normal&screen_name=pinkroot";
+        return this.src = "/img/notfound.jpg";
       };
-      image.src = "https://api.twitter.com/1/users/profile_image?size=normal&screen_name=" + this.name;
+      try {
+        image.src = "https://api.twitter.com/1/users/profile_image?size=normal&screen_name=" + this.name;
+      } catch (e) {
+        alert(e);
+      }
       this.icon = new Kinetic.Image({
         image: image,
         x: this.pos.x,
         y: this.pos.y,
-        width: 40,
-        height: 40
+        width: icon_size,
+        height: icon_size
       });
       self = this;
       close_click = function() {
@@ -425,8 +446,8 @@
       close_dragend = function() {
         return self.dragend();
       };
-      close_mousemove = function() {
-        return self.mousemove();
+      close_dragmove = function() {
+        return self.dragmove();
       };
       this.icon.on("click", close_click);
       this.icon.on("dblclick", close_dbclick);
@@ -434,9 +455,9 @@
       this.icon.on("mouseout", close_mouseout);
       this.icon.on("dragstart", close_dragstart);
       this.icon.on("dragend", close_dragend);
-      this.icon.on("mousemove", close_mousemove);
+      this.icon.on("dragmove", close_dragmove);
       this.icon.draggable(true);
-      return userobjects.stage.add(this.icon);
+      return userobjects.user_layer.add(this.icon);
     };
 
     return UserObject;

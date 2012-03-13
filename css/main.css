@@ -4,38 +4,74 @@
 	font-family: 'メイリオ',Meiryo,'AXIS Std L','ヒラギノ角ゴ Pro W3','Hiragino Kaku Gothic Pro','ＭＳ Ｐゴシック',sans-serif;
 }
 
-body {
-	background: #000000;
+input {
+    margin-bottom:10px;
+    border:none;
+    font-size:20px;
+    vertical-align:middle;
+    text-align:center;
+    
 }
 
+form{
+    margin: 0;
+    padding: 0;
+    /*
+    width: 820px;
+    height: 100px;
+    */
+    vertical-align:middle;
+    
+}
+
+body {
+	background: #FFFFFF;
+}
+
+
+/*-----------------
+ヘッダー
+------------------*/
 #header{
 	/*background: #ff0000;*/
-	background: #000000;
+	/*background: #90AFEF;*/
 	display: block;
 	text-align: center;
 	margin-left: auto;
 	margin-right: auto;
-	margin-top: 5px;
-	margin-bottom: 20px;
-	width: 820px;
+	margin-top: 0px;
+	margin-bottom: 30px;
+    padding-bottom: 20px;
+    width: 1000px;
+    height: 180px;
 	
 }
 
+
+/*-----------------
+ヘッダとフッタを除いた部分
+------------------*/
 #main_area{
 	/*background: #ff00ff;*/
-	background: #000000;
-	width: 820px;
+	width: 1000px;
+    height: 1100px;
+    
+	margin-bottom: 0px;
 	margin-bottom: 20px;
 }
 
-/*
+
+
+/*-----------------
+左側エリア
+------------------*/
 #left_area{
 	float: left;
-	/*background: #00ff00;
-	width: 19%;
+	/*background: #ffff00;*/
+	width: 5%;
 	margin-left: auto;
 }
-*/
+
 
 
 /*-----------------
@@ -43,22 +79,64 @@ body {
 ------------------*/
 #center_area{
 	float: left;
-	/*background: #0000ff;*/
-	background: #000000;
-	width: 820px;
+	/*background: #FF0000;*/
+	/*
+    width: 820px;
 	height: 500px;
+    */
+    width: 900px;
+    height: 650px;
+    /*background-image: url("../img/frame.png")*/
+}
+
+#form_area{
+    /*background: #00FF00;*/
+    width: 900px;
+    height: 50px;
+    
+    margin-top: 0px;
+    margin-bottom: 20px;
+}
+
+#form{
+    
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: auto;
+	margin-left: auto;
+	margin-right: auto;
+    padding-top: 3px;
+    
+    background-image: url("../img/form_back.png");
+    background-repeat: no-repeat;
+    background-position: center top;
+}
+
+#linker_area{
+    /*background: #0000ff; */
+    width: 900px;
+    height: 600px;
+    background-image: url("../img/frame.png");
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: 900px 500px;
 }
 
 
-/*
+/*-----------------
+右側エリア
+------------------*/
 #right_area{
 	float: left;
-	/*background: #ffff00;
-	width: 19%;
+	/*background: #ff00ff;*/
+	width: 5%;
 	margin-right: auto;
 }
-*/
 
+
+/*-----------------
+HowToエリア
+------------------*/
 #how_to{
 	/*background: #F0F0F0; */　
 	/*clear: both;*/
@@ -73,4 +151,23 @@ body {
 
 #how_to_img{
 	zoom: 50%;
+}
+
+/*-----------------
+フッター
+------------------*/
+#footer{
+    background: #90AFEF;
+    height: 100px;
+    display: block;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#to_top{
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+    padding-top: 20px;
 }

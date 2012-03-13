@@ -6,10 +6,24 @@
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
 
 <script src="js/jquery-1.6.4.min.js" type="text/javascript"></script>
-<script src="js/kinetic.js" type="text/javascript"></script>
+<script src="http://www.kineticjs.com/download/kinetic-v3.8.3.min.js" type="text/javascript"></script>
 <script src="js/linker_viewer.js" type="text/javascript"></script>
 
-<title>TwitterLinker</title>
+<title>Twitter Linker</title>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-10568379-9']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
 </head>
 
 <body>
@@ -27,17 +41,51 @@
 </div><!-- /left_area -->
 
 <div id="center_area">
-</div>
+
+<div id="form_area">
+<div id="form">
+<form method="GET">
+<input type="text" name="screenname">
+<input type="image" src="./img/check.gif" alt="Check!">
+</form>
+</div><!-- /form -->
+</div><!-- /form_area -->
+
+<div id="linker_area">
+</div><!-- /linker_area -->
+
+</div><!-- /center_area -->
 
 <div id="right_area">
 <h1>　</h1>
 </div><!-- /right_area -->
 
-</div><!-- /main_area -->
 
 <div id="how_to">
 <img src="./img/twitter_linker_how_to.png" alt="HowTo" id="how_to_img">
+<p>Twitter-Linkerは、「最近リプライを飛ばしたユーザ」の繋がりを可視化するサービスです。<br />
+ページ上部のフォームにチェックしたいユーザの名前を入力することで利用を開始することができます。<p>
+<img src="./img/spacer.png" height="13px">
+<p>表示されたアイコンをシングルクリックすることで、最近リプライを飛ばしたユーザを表示することができます。<br />
+また、新たに表示されたユーザのアイコンをクリックすることで、ユーザの繋がりがどんどん広がっていきます。</p>
+<img src="./img/spacer.png" height="13px">
+<p>アイコンをダブルクリックすると、そのユーザのタイムラインが表示されます。</p>
+<img src="./img/spacer.png" height="20px">
+<p>ご意見・ご感想がありましたら、<br />
+<img src="./img/spacer.png" height="10px"><br />
+<img src="./img/mail_img.png"><br />
+<img src="./img/spacer.png" height="10px"><br />
+からご連絡をよろしくお願い致します。<br />
+<img src="./img/spacer.png" height="10px"><br />
+* 広告出稿も募集中です。</p>
 </div><!-- /how_to -->
+
+</div><!-- /main_area -->
+
+<div id="footer">
+<div id="to_top"><a href="./index.html">うえへもどる</a></div>
+</div><!-- /footer -->
+
 
 <!-- </div><!-- /contents_wrapper  -->
 

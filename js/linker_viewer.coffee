@@ -8,7 +8,7 @@ class UserObjects extends PhysicalObjects
 		super();
 		@width = 1024;
 		@height = 780;
-		@stage = new Kinetic.Stage("center_area", @width, @height);
+		@stage = new Kinetic.Stage("linker_area", @width, @height);
 		self = this;
 		close_down = -> self.mouse_down();
 		close_move = -> self.mouse_move();
@@ -16,13 +16,13 @@ class UserObjects extends PhysicalObjects
 		@stage.on("mousedown", close_down);
 		@stage.on("mousemove", close_move);
 		@stage.on("mouseup", close_up);
-		@lines = new Kinetic.Shape(-> 
-			"test"
-		"background");
-		@stage.add(@lines);
+		@user_layer = new Kinetic.Layer();
+		@line_layer = new Kinetic.Layer();
+		@stage.add(@line_layer);
+		@stage.add(@user_layer);
 	update: () ->
 		super();
-		@stage.drawShapes();
+		@stage.draw();
 		@draw_lines();
 	find_object: (icon) ->
 		for object in @objects
@@ -30,7 +30,7 @@ class UserObjects extends PhysicalObjects
 				return (object);
 	
 	draw_lines: () ->
-		context = @lines.getContext();
+		context = @line_layer.getContext();
 		context.lineWidth = 4;
 		for object in @objects
 			for child in object.childs
@@ -39,10 +39,22 @@ class UserObjects extends PhysicalObjects
 				context.moveTo(object.pos.x + icon_size / 2, object.pos.y + icon_size / 2);
 				context.lineTo(child.pos.x + icon_size / 2, child.pos.y + icon_size / 2);
 				context.stroke();
+			for link in object.links
+				context.beginPath();
+				context.strokeStyle = color_list[object.depth % color_count];
+				context.moveTo(object.pos.x + icon_size / 2, object.pos.y + icon_size / 2);
+				context.lineTo(link.pos.x + icon_size / 2, link.pos.y + icon_size / 2);
+				context.stroke();
 	is_duplicate: (name) ->
 		for object in @objects
 			if (object.name == name)
 				return (true);
+		return (false);
+
+	get_duplicate: (name) ->
+		for object in @objects
+			if (object.name == name)
+				return (object);
 		return (false);
 	is_on_mouse_object: (pos) ->
 		for object in @objects
@@ -71,6 +83,7 @@ class UserObjects extends PhysicalObjects
 class UserObject extends PhysicalObject
 	constructor: (pos, dest, name, parent, depth) ->
 		super(pos, dest);
+		@links = [];
 		@start_pos = new Vector(pos.x, pos.y);
 		@name = name;
 		@parent = parent;
@@ -81,39 +94,41 @@ class UserObject extends PhysicalObject
 		super();
 		@icon.x += @velocity.x;
 		@icon.y += @velocity.y;
-		if (@is_moving())
-			@icon.draggable(false);
-		else
-			@icon.draggable(true);
-		
 
 	draw: () ->
 		alert("test");
 
 	click: () ->
-		v = drag_state.get_drag_vector();
 		x = @dest.x;
 		y = @dest.y;
-		@icon.setWidth(50);
-		@icon.setHeight(50);
-		console.log(@icon.width);
-		if (v.size() < 3)
-			self = this;
-			$.getJSON("/cgi-bin/linker.py", {"username": @name}, (json) ->
-				users = json.users;
-				random_radian = Math.random() * 2 * Math.PI;
-				count = json.users.length;
-				r = 200;
-				for user,i in users
-					if (userobjects.is_duplicate(user) == false)
-						nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
-						ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
-						v = new Vector(nx, ny);
-						s = new Vector(self.pos.x, self.pos.y);
-						add = new UserObject(s, v, user, self, self.depth + 1);
-						self.childs.push(add);
-						userobjects.append(add);
-			)
+		self = this;
+		change_size = ->
+			self.icon.setWidth(icon_size);
+			self.icon.setHeight(icon_size);
+			userobjects.stage.draw();
+		$.getJSON("/cgi-bin/linker.py", {"username": @name}, (json) ->
+			self.icon.setWidth(50);
+			self.icon.setHeight(50);
+			userobjects.stage.draw();
+			setTimeout(change_size, 300);
+			users = json.users;
+			random_radian = Math.random() * 2 * Math.PI;
+			count = json.users.length;
+			r = 200;
+			for user,i in users
+				if (userobjects.is_duplicate(user) == false)
+					nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
+					ny = y + (Math.sin((2 * Math.PI / count) * i + random_radian) * r);
+					v = new Vector(nx, ny);
+					s = new Vector(self.dest.x, self.dest.y);
+					add = new UserObject(s, v, user, self, self.depth + 1);
+					console.log(add);
+					self.childs.push(add);
+					userobjects.append(add);
+					#add.click();
+				else
+					self.links.push(userobjects.get_duplicate(user));
+		)
 	dbclick: () ->
 		window.open("https://twitter.com/#!/" + @name);
 		
@@ -127,16 +142,14 @@ class UserObject extends PhysicalObject
 			drag_state.set(userobjects.stage.getMousePosition());
 			@icon.moveToTop();
 	dragend: () ->
-		@pos.x = (@start_pos.x + @icon.x);
-		@pos.y = (@start_pos.y + @icon.y);
-		@dest.x = (@start_pos.x + @icon.x);
-		@dest.y = (@start_pos.y + @icon.y);
-		#@icon.x = (@pos.x - @start_pos.x);
-		#@icon.y = (@pos.y - @start_pos.y);
 		drag_state.unset();
 		console.log(@icon.x, @icon.y);
-	mousemove: () ->
+	dragmove: () ->
 		if (drag_state.flag == true)
+			@pos.x = @icon.x;
+			@pos.y = @icon.y;
+			@dest.x = @icon.x;
+			@dest.y = @icon.y;
 			pos = userobjects.stage.getMousePosition();
 			vec = new Vector(pos.x, pos.y);
 			vec.sub(drag_state.ago_pos);
@@ -156,15 +169,18 @@ class UserObject extends PhysicalObject
 		
 	init: () ->
 		image = new Image();
-		image.onerror = =>
-			this.src =  "https://api.twitter.com/1/users/profile_image?size=normal&screen_name=pinkroot";
-		image.src =   "https://api.twitter.com/1/users/profile_image?size=normal&screen_name=" + @name;
+		image.onerror = ->
+			@src =  "/img/notfound.jpg";
+		try
+			image.src =   "https://api.twitter.com/1/users/profile_image?size=normal&screen_name=" + @name;
+		catch e
+			alert(e);
 		@icon = new Kinetic.Image(
 			image: image
 			x: @pos.x;
 			y: @pos.y;
-			width: 40;
-			height: 40;
+			width: icon_size;
+			height: icon_size;
 		)
 		self = this;
 		close_click = -> self.click();
@@ -173,16 +189,16 @@ class UserObject extends PhysicalObject
 		close_mouseout = -> self.mouseout();
 		close_dragstart = -> self.dragstart();
 		close_dragend = -> self.dragend();
-		close_mousemove = -> self.mousemove();
+		close_dragmove = -> self.dragmove();
 		@icon.on("click", close_click);
 		@icon.on("dblclick", close_dbclick);
 		@icon.on("mouserober", close_mouseover);
 		@icon.on("mouseout", close_mouseout);
 		@icon.on("dragstart", close_dragstart);
 		@icon.on("dragend", close_dragend);
-		@icon.on("mousemove", close_mousemove);
+		@icon.on("dragmove", close_dragmove);
 		@icon.draggable(true);
-		userobjects.stage.add(@icon);
+		userobjects.user_layer.add(@icon);
 
 
 
