@@ -225,7 +225,7 @@ window.onload = ->
 	request = getRequest();
 	userobjects = new UserObjects();
 	start_pos = new Vector(userobjects.width / 2, userobjects.height / 2);
-	if (request.screenname?)
+	if (request.screenname != "")
 		name = request.screenname;
 	else
 		name = "pinkroot";
