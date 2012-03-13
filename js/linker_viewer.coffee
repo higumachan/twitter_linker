@@ -6,9 +6,9 @@ icon_size = 40
 class UserObjects extends PhysicalObjects
 	constructor: () ->
 		super();
-		@width = 1024;
-		@height = 780;
-		@stage = new Kinetic.Stage("linker_area", @width, @height);
+		@width = 960;
+		@height = 740;
+		@stage = new Kinetic.Stage("draw_area", @width, @height);
 		self = this;
 		close_down = -> self.mouse_down();
 		close_move = -> self.mouse_move();
@@ -222,9 +222,15 @@ drag_state = new DragState();
 stage_drag_state = new DragState();
 userobjects = 0;
 window.onload = -> 
+	request = getRequest();
 	userobjects = new UserObjects();
 	start_pos = new Vector(userobjects.width / 2, userobjects.height / 2);
-	root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), "pinkroot", "root", 0);
+	if (request.screenname?)
+		name = request.screenname;
+	else
+		name = "pinkroot";
+	$("#input_area").val(name);
+	root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), name, "root", 0);
 	userobjects.append(root_user);
 	
 	self_update = userobjects;

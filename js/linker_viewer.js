@@ -144,9 +144,9 @@
     function UserObjects() {
       var close_down, close_move, close_up, self;
       UserObjects.__super__.constructor.call(this);
-      this.width = 1024;
-      this.height = 780;
-      this.stage = new Kinetic.Stage("linker_area", this.width, this.height);
+      this.width = 960;
+      this.height = 740;
+      this.stage = new Kinetic.Stage("draw_area", this.width, this.height);
       self = this;
       close_down = function() {
         return self.mouse_down();
@@ -502,10 +502,17 @@
   userobjects = 0;
 
   window.onload = function() {
-    var close_update, root_user, self_update, start_pos;
+    var close_update, name, request, root_user, self_update, start_pos;
+    request = getRequest();
     userobjects = new UserObjects();
     start_pos = new Vector(userobjects.width / 2, userobjects.height / 2);
-    root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), "pinkroot", "root", 0);
+    if ((request.screenname != null)) {
+      name = request.screenname;
+    } else {
+      name = "pinkroot";
+    }
+    $("#input_area").val(name);
+    root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), name, "root", 0);
     userobjects.append(root_user);
     self_update = userobjects;
     close_update = function() {
