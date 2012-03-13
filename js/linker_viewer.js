@@ -160,6 +160,9 @@
       this.stage.on("mousedown", close_down);
       this.stage.on("mousemove", close_move);
       this.stage.on("mouseup", close_up);
+      this.stage.on("touchstart", close_down);
+      this.stage.on("touchmove", close_move);
+      this.stage.on("touchend", close_up);
       this.user_layer = new Kinetic.Layer();
       this.line_layer = new Kinetic.Layer();
       this.stage.add(this.line_layer);
@@ -184,7 +187,7 @@
     UserObjects.prototype.draw_lines = function() {
       var child, context, link, object, _i, _j, _len, _len2, _ref, _ref2, _results;
       context = this.line_layer.getContext();
-      context.lineWidth = 4;
+      context.lineWidth = 2;
       _ref = this.objects;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -250,14 +253,14 @@
 
     UserObjects.prototype.mouse_down = function() {
       var pos;
-      pos = this.stage.getMousePosition();
+      pos = this.stage.getUserPosition();
       if (this.is_on_mouse_object(pos) === true) return 0.;
       if (stage_drag_state.flag === false) return stage_drag_state.set(pos);
     };
 
     UserObjects.prototype.mouse_move = function() {
       var object, pos, v, _i, _len, _ref;
-      pos = this.stage.getMousePosition();
+      pos = this.stage.getUserPosition();
       if (stage_drag_state.flag === true) {
         _ref = this.objects;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -265,6 +268,9 @@
           v = new Vector(pos.x, pos.y);
           v.sub(stage_drag_state.ago_pos);
           object.dest.add(v);
+          object.pos.add(v);
+          object.icon.x += v.x;
+          object.icon.y += v.y;
         }
         return stage_drag_state.update(new Vector(pos.x, pos.y));
       }
@@ -304,9 +310,7 @@
     };
 
     UserObject.prototype.click = function() {
-      var change_size, self, x, y;
-      x = this.dest.x;
-      y = this.dest.y;
+      var change_size, self;
       self = this;
       change_size = function() {
         self.icon.setWidth(icon_size);
@@ -316,7 +320,9 @@
       return $.getJSON("/cgi-bin/linker.py", {
         "username": this.name
       }, function(json) {
-        var add, count, i, nx, ny, r, random_radian, s, user, users, v, _len, _results;
+        var add, count, i, nx, ny, r, random_radian, s, user, users, v, x, y, _len, _results;
+        x = self.dest.x;
+        y = self.dest.y;
         self.icon.setWidth(50);
         self.icon.setHeight(50);
         userobjects.stage.draw();
@@ -324,7 +330,7 @@
         users = json.users;
         random_radian = Math.random() * 2 * Math.PI;
         count = json.users.length;
-        r = 200;
+        r = 160;
         _results = [];
         for (i = 0, _len = users.length; i < _len; i++) {
           user = users[i];
@@ -359,7 +365,7 @@
 
     UserObject.prototype.dragstart = function() {
       if (drag_state.flag === false) {
-        drag_state.set(userobjects.stage.getMousePosition());
+        drag_state.set(userobjects.stage.getUserPosition());
         return this.icon.moveToTop();
       }
     };
@@ -376,7 +382,7 @@
         this.pos.y = this.icon.y;
         this.dest.x = this.icon.x;
         this.dest.y = this.icon.y;
-        pos = userobjects.stage.getMousePosition();
+        pos = userobjects.stage.getUserPosition();
         vec = new Vector(pos.x, pos.y);
         vec.sub(drag_state.ago_pos);
         this.dragger_move(vec);
@@ -410,7 +416,7 @@
     };
 
     UserObject.prototype.init = function() {
-      var close_click, close_dbclick, close_dragend, close_dragmove, close_dragstart, close_mouseout, close_mouseover, image, self;
+      var close_click, close_dbclick, close_dragend, close_dragmove, close_dragstart, close_mouseout, close_mouseover, close_touchend, close_touchmove, close_touchstart, image, self;
       image = new Image();
       image.onerror = function() {
         return this.src = "/img/notfound.jpg";
@@ -449,13 +455,26 @@
       close_dragmove = function() {
         return self.dragmove();
       };
+      close_touchstart = function() {
+        return self.dragstart();
+      };
+      close_touchmove = function() {
+        return self.dragmove();
+      };
+      close_touchend = function() {
+        self.dragend();
+        return self.click();
+      };
       this.icon.on("click", close_click);
       this.icon.on("dblclick", close_dbclick);
-      this.icon.on("mouserober", close_mouseover);
+      this.icon.on("mouseover", close_mouseover);
       this.icon.on("mouseout", close_mouseout);
       this.icon.on("dragstart", close_dragstart);
       this.icon.on("dragend", close_dragend);
       this.icon.on("dragmove", close_dragmove);
+      this.icon.on("touchstart", close_touchstart);
+      this.icon.on("touchend", close_touchend);
+      this.icon.on("touchmove", close_touchmove);
       this.icon.draggable(true);
       return userobjects.user_layer.add(this.icon);
     };
@@ -506,12 +525,13 @@
     request = getRequest();
     userobjects = new UserObjects();
     start_pos = new Vector(userobjects.width / 2, userobjects.height / 2);
-    if (request.screenname !== "") {
+    if ((request.screenname != null) && request.screenname !== "") {
       name = request.screenname;
+      $("#input_area").val(name);
     } else {
       name = "pinkroot";
+      $("#input_area").val("ユーザ名はこちら");
     }
-    $("#input_area").val(name);
     root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), name, "root", 0);
     userobjects.append(root_user);
     self_update = userobjects;

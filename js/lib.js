@@ -1,12 +1,3 @@
-function DrawLike() {
-	$.getJSON("./cgi-bin/like_count.py", {}, function(json){
-		for (var i = 0; i < json.like_count; i++){
-			var style = "left:" + GetRandomNumber() +"%;"+ "top:" + GetRandomNumber() +"%;" +  "position:absolute;opacity:1.0;";
-			$("body").html($("body").html() + "<h1 " + 'class="t2" id="' + count +'" ' + "style=" + style + ">(・∀・)ｲｲﾈ!!</h1>");
-			count++;
-		}
-	});
-}
 
 function get_date(){
 	date = new Date();

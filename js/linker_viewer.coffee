@@ -16,6 +16,9 @@ class UserObjects extends PhysicalObjects
 		@stage.on("mousedown", close_down);
 		@stage.on("mousemove", close_move);
 		@stage.on("mouseup", close_up);
+		@stage.on("touchstart", close_down);
+		@stage.on("touchmove", close_move);
+		@stage.on("touchend", close_up);
 		@user_layer = new Kinetic.Layer();
 		@line_layer = new Kinetic.Layer();
 		@stage.add(@line_layer);
@@ -31,7 +34,7 @@ class UserObjects extends PhysicalObjects
 	
 	draw_lines: () ->
 		context = @line_layer.getContext();
-		context.lineWidth = 4;
+		context.lineWidth = 2;
 		for object in @objects
 			for child in object.childs
 				context.beginPath();
@@ -62,19 +65,22 @@ class UserObjects extends PhysicalObjects
 				return (true);
 		return (false);
 	mouse_down: () ->
-		pos = @stage.getMousePosition();
+		pos = @stage.getUserPosition();
 		if (@is_on_mouse_object(pos) == true)
 			return (0);
 		if (stage_drag_state.flag == false)
 			stage_drag_state.set(pos);
 	mouse_move: () ->
-		pos = @stage.getMousePosition();
+		pos = @stage.getUserPosition();
 		if (stage_drag_state.flag == true)
 			for object in @objects
 				v = new Vector(pos.x, pos.y);
 				v.sub(stage_drag_state.ago_pos);
 				#v.rev();
 				object.dest.add(v);
+				object.pos.add(v);
+				object.icon.x += v.x
+				object.icon.y += v.y
 			stage_drag_state.update(new Vector( pos.x, pos.y));
 	mouse_up: () ->
 		stage_drag_state.unset();
@@ -99,14 +105,14 @@ class UserObject extends PhysicalObject
 		alert("test");
 
 	click: () ->
-		x = @dest.x;
-		y = @dest.y;
 		self = this;
 		change_size = ->
 			self.icon.setWidth(icon_size);
 			self.icon.setHeight(icon_size);
 			userobjects.stage.draw();
 		$.getJSON("/cgi-bin/linker.py", {"username": @name}, (json) ->
+			x = self.dest.x;
+			y = self.dest.y;
 			self.icon.setWidth(50);
 			self.icon.setHeight(50);
 			userobjects.stage.draw();
@@ -114,7 +120,7 @@ class UserObject extends PhysicalObject
 			users = json.users;
 			random_radian = Math.random() * 2 * Math.PI;
 			count = json.users.length;
-			r = 200;
+			r = 160;
 			for user,i in users
 				if (userobjects.is_duplicate(user) == false)
 					nx = x + (Math.cos((2 * Math.PI / count) * i + random_radian) * r);
@@ -133,13 +139,15 @@ class UserObject extends PhysicalObject
 		window.open("https://twitter.com/#!/" + @name);
 		
 	mouseover: () ->
+		#$.getJSON("/cgi-bin/linker.py", {"username": @name}, (json) ->
+		#	console.log(@name));
 		console.log(@name);
 
 	mouseout: () ->
 		console.log(@name);
 	dragstart: () ->
 		if (drag_state.flag == false)
-			drag_state.set(userobjects.stage.getMousePosition());
+			drag_state.set(userobjects.stage.getUserPosition());
 			@icon.moveToTop();
 	dragend: () ->
 		drag_state.unset();
@@ -150,7 +158,7 @@ class UserObject extends PhysicalObject
 			@pos.y = @icon.y;
 			@dest.x = @icon.x;
 			@dest.y = @icon.y;
-			pos = userobjects.stage.getMousePosition();
+			pos = userobjects.stage.getUserPosition();
 			vec = new Vector(pos.x, pos.y);
 			vec.sub(drag_state.ago_pos);
 			@dragger_move(vec);
@@ -190,13 +198,21 @@ class UserObject extends PhysicalObject
 		close_dragstart = -> self.dragstart();
 		close_dragend = -> self.dragend();
 		close_dragmove = -> self.dragmove();
+		close_touchstart = -> self.dragstart();
+		close_touchmove = -> self.dragmove();
+		close_touchend = -> 
+			self.dragend();
+			self.click();
 		@icon.on("click", close_click);
 		@icon.on("dblclick", close_dbclick);
-		@icon.on("mouserober", close_mouseover);
+		@icon.on("mouseover", close_mouseover);
 		@icon.on("mouseout", close_mouseout);
 		@icon.on("dragstart", close_dragstart);
 		@icon.on("dragend", close_dragend);
 		@icon.on("dragmove", close_dragmove);
+		@icon.on("touchstart", close_touchstart);
+		@icon.on("touchend", close_touchend);
+		@icon.on("touchmove", close_touchmove);
 		@icon.draggable(true);
 		userobjects.user_layer.add(@icon);
 
@@ -225,11 +241,12 @@ window.onload = ->
 	request = getRequest();
 	userobjects = new UserObjects();
 	start_pos = new Vector(userobjects.width / 2, userobjects.height / 2);
-	if (request.screenname != "")
+	if (request.screenname? and request.screenname != "")
 		name = request.screenname;
+		$("#input_area").val(name);
 	else
 		name = "pinkroot";
-	$("#input_area").val(name);
+		$("#input_area").val("ユーザ名はこちら");
 	root_user = new UserObject(start_pos, new Vector(start_pos.x, start_pos.y), name, "root", 0);
 	userobjects.append(root_user);
 	
