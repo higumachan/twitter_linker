@@ -95,7 +95,7 @@ body {
     height: 50px;
     
     margin-top: 0px;
-    margin-bottom: 20px;
+    margin-bottom: 50px;
 }
 
 #form{
@@ -106,15 +106,27 @@ body {
 	margin-left: auto;
 	margin-right: auto;
     padding-top: 3px;
-    
     background-image: url("../img/form_back.png");
     background-repeat: no-repeat;
     background-position: center top;
 }
 
+
+#buttons{
+    float: left;
+    width: 65%;
+}
+
+#to_how_to_and_tweet{
+    float: right;
+    width: 35%;
+}
+
+
 #linker_area{
     /*background: #00ffff; */
-    width: 1024px;
+    clear: both;
+	width: 1024px;
     height: 800px;
     background-image: url("../img/frame.png");
     background-repeat: no-repeat;
