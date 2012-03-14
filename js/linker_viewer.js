@@ -342,10 +342,11 @@
             add = new UserObject(s, v, user, self, self.depth + 1);
             console.log(add);
             self.childs.push(add);
-            _results.push(userobjects.append(add));
+            userobjects.append(add);
           } else {
-            _results.push(self.links.push(userobjects.get_duplicate(user)));
+            self.links.push(userobjects.get_duplicate(user));
           }
+          _results.push(add.click());
         }
         return _results;
       });

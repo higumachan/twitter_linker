@@ -134,6 +134,7 @@ class UserObject extends PhysicalObject
 					#add.click();
 				else
 					self.links.push(userobjects.get_duplicate(user));
+				add.click();
 		)
 	dbclick: () ->
 		window.open("https://twitter.com/#!/" + @name);
